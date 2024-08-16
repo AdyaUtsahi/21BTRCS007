@@ -33,6 +33,53 @@ class Manager{
     }
 }
 const manager = new Manager(windowSize);
+
+app.use((req, res, next) => {
+    res.setTimeout(500, () => {
+        res.status(503).json({ error: 'Request timed out' });
+    });
+    next();
+});
+async function fetchNumbers(type) {
+    const url = `https://test-server.com/api/${type}`;
+    const timeout = 500;
+
+    try {
+        const response = await axios.get(url, { timeout });
+
+        const numbers = response.data.numbers || [];
+        return numbers;
+    } catch (error) {
+        // Log the specific error message
+        console.error(`Failed to fetch numbers for type "${type}":`, error.message);
+
+        return [];
+    }
+}
+app.get('/numbers/:numberId', async (req, res) => {
+    const { numberId } = req.params;
+    const validIds = ['p', 'f', 'e', 'r'];
+
+    if (!validIds.includes(numberId)) {
+        return res.status(400).json({ error: 'Invalid number ID' });
+    }
+
+    const windowPrevState = windowManager.getWindow();
+
+    const newNumbers = await fetchNumbers(numberId);
+
+    windowManager.addNumbers(newNumbers);
+
+    const avg = windowManager.getAverage();
+
+    res.json({
+        numbers: newNumbers,
+        windowPrevState,
+        windowCurrState: windowManager.getWindow(),
+        avg,
+    });
+});
+
          
     
 
