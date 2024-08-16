@@ -41,7 +41,7 @@ app.use((req, res, next) => {
     next();
 });
 async function fetchNumbers(type) {
-    const url = `https://test-server.com/api/${type}`;
+    const url = `http://20.244.56.144/test/${type}`;
     const timeout = 500;
 
     try {
